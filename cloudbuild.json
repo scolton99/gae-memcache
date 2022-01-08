@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {
+      "name": "gcr.io/cloud-builders/go",
+      "args": ["build"]
+    },
+    {
+      "name": "gcr.io/cloud-builders/gcloud",
+      "args": ["app", "deploy"]
+    }
+  ]
+}
