@@ -2,7 +2,7 @@
   "steps": [
     {
       "name": "gcr.io/cloud-builders/go",
-      "args": ["get"],
+      "args": ["install"],
       "env": ["GOPATH=/workspace/go"]
     },
     {
