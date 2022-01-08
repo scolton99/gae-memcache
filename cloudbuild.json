@@ -3,17 +3,17 @@
     {
       "name": "gcr.io/cloud-builders/go",
       "args": ["get"],
-      "env": ["GOPATH=."]
+      "env": ["GOPATH=/workspace/go"]
     },
     {
       "name": "gcr.io/cloud-builders/go",
       "args": ["build"],
-      "env":  ["GOPATH=."]
+      "env":  ["GOPATH=/workspace/go"]
     },
     {
       "name": "gcr.io/cloud-builders/gcloud",
       "args": ["app", "deploy"],
-      "env":  ["GOPATH=."]
+      "env":  ["GOPATH=/workspace/go"]
     }
   ]
 }
