@@ -6,13 +6,11 @@
     },
     {
       "name": "gcr.io/cloud-builders/go",
-      "args": ["build"],
-      "env":  ["GOPATH=/workspace/go"]
+      "args": ["build"]
     },
     {
       "name": "gcr.io/cloud-builders/gcloud",
-      "args": ["app", "deploy"],
-      "env":  ["GOPATH=/workspace/go"]
+      "args": ["app", "deploy"]
     }
   ]
 }
