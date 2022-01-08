@@ -2,8 +2,7 @@
   "steps": [
     {
       "name": "gcr.io/cloud-builders/go",
-      "args": ["get", "./..."],
-      "env": ["GOPATH=/workspace/go"]
+      "args": ["get", "./..."]
     },
     {
       "name": "gcr.io/cloud-builders/go",
