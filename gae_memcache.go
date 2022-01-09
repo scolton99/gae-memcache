@@ -64,7 +64,7 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		if _, err = w.Write(result.Value); err != nil {
 			gaeLog("Failed to write to socket: %s", err)
 		}
-		gaeLog("Got %s in memcache: %s", req.Key, result)
+		gaeLog("Got %s in memcache: %s", req.Key, result.Value)
 		return
 	}
 	default: {
