@@ -23,6 +23,10 @@ type ExpireRequest struct {
 	Expiration int
 }
 
+func gaeLog(msg string, a ...interface{}) {
+	log.Printf("[MEMCACHE] " + msg, a);
+}
+
 func decode(w http.ResponseWriter, r *http.Request, dest interface{}) bool {
 	if err := json.NewDecoder(r.Body).Decode(dest); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -46,8 +50,6 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Getting %s", req.Key)
-
 	result, err := memcache.Get(r.Context(), req.Key)
 	switch err {
 	case memcache.ErrCacheMiss: {
@@ -59,15 +61,16 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		log.Printf("Value: %s", result.Value)
 		if _, err = w.Write(result.Value); err != nil {
-			log.Printf("Failed to write to socket: %s", err)
+			gaeLog("Failed to write to socket: %s", err)
 		}
+		gaeLog("Got %s in memcache: %s", req.Key, result)
 		return
 	}
 	default: {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Failed to get value from memcache: %s", err)
+		gaeLog("Failed to get value from memcache: %s", err)
+		return
 	}
 	}
 }
@@ -78,7 +81,7 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Setting %s to %s", req.Key, req.Value)
+	gaeLog("Setting %s to %s", req.Key, req.Value)
 
 	item := &memcache.Item{
 		Key: req.Key,
@@ -87,8 +90,11 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := memcache.Set(r.Context(), item); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Failed to set value in memcache: %s", item)
+		gaeLog("Failed to set value in memcache: %s -> %s", item.Key, item.Value)
+		return
 	}
+
+	gaeLog("Set %s in memcache to %s", item.Key, item.Value)
 }
 
 func expireHandler(w http.ResponseWriter, r *http.Request) {
@@ -97,13 +103,13 @@ func expireHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Changing expiry of %s", req.Key)
+	gaeLog("Changing expiry of %s", req.Key)
 
 	cur, err := memcache.Get(r.Context(), req.Key)
 	switch err {
 	case memcache.ErrCacheMiss: {
 		w.WriteHeader(http.StatusNotFound)
-		log.Printf("Attempted to change expiry on non-existent item %s", req.Key)
+		gaeLog("Attempted to change expiry on non-existent item %s", req.Key)
 		return
 	}
 	case nil: {
@@ -111,7 +117,7 @@ func expireHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	default: {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Error setting expiration: %s", err)
+		gaeLog("Error setting expiration: %s", err)
 		return
 	}
 	}
@@ -125,8 +131,10 @@ func expireHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err2 := memcache.Set(r.Context(), item); err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Printf("Failed to set value with expiration in memcache: %s", item)
+		gaeLog("Failed to set value with expiration in memcache: %s -> %s", item.Key, item.Expiration)
+		return
 	}
 
+	gaeLog("Set expiration of %s to %s seconds from now", item.Key, item.Expiration)
 	w.WriteHeader(http.StatusOK)
 }
